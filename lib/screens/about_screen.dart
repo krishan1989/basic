@@ -1,37 +1,40 @@
 import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatelessWidget {
-  final String name;
-  final String department;
 
-  const ProfileScreen({
-    super.key,
-    required this.name,
-    required this.department,
-  });
+class AboutScreen extends StatelessWidget {
+  final String name;
+  final String developer;
+  final String version;
+  
+  const AboutScreen(
+    {
+      super.key,
+      required this.name,
+      required this.developer,
+      required this.version,
+
+    }
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: const Text("About"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             const SizedBox(height: 30),
-
             const CircleAvatar(
-              radius: 50,
+              radius: 10,
               child: Icon(
-                Icons.person,
+                Icons.info,
                 size: 50,
               ),
             ),
-
-            const SizedBox(height: 20),
-
+            const SizedBox(height: 30),
             Text(
               name,
               style: const TextStyle(
@@ -39,27 +42,33 @@ class ProfileScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 10),
-
             Text(
-              department,
+              developer,
               style: const TextStyle(
                 fontSize: 18,
               ),
             ),
-
+            const SizedBox(height: 10),
+            Text(
+              version,
+              style: const TextStyle(
+                fontSize: 18,
+              ),
+            ),
             const SizedBox(height: 30),
-
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: const Text("Back"),
             ),
+           
+          
           ],
         ),
       ),
     );
   }
+
 }
