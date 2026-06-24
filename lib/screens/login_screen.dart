@@ -1,174 +1,317 @@
 import 'package:flutter/material.dart';
 
-import 'home_screen.dart';
+import '../services/auth_service.dart';
+import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() =>
+      _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+class _LoginScreenState
+    extends State<LoginScreen> {
 
-  bool isPasswordHidden = true;
+  /// Email Controller
+  final TextEditingController
+  emailController =
+  TextEditingController();
 
+  /// Password Controller
+  final TextEditingController
+  passwordController =
+  TextEditingController();
+
+  /// Form Key
+  final _formKey =
+  GlobalKey<FormState>();
+
+  /// Loading State
   bool isLoading = false;
 
+  /// Password Hide/Show
+  bool isPasswordHidden = true;
+
   @override
-  void dispose(){
+  void dispose() {
+
+    /// Memory free karne ke liye
     emailController.dispose();
     passwordController.dispose();
+
     super.dispose();
   }
 
-  Future<void> login() async{
-    if(!_formKey.currentState!.validate())
-      {
-        return;
+  /// Login Function
+  Future<void> login() async {
 
+    /// Validation Check
+    if (!_formKey.currentState!
+        .validate()) {
+      return;
+    }
 
-      }
-    setState(() {
-      isLoading = true;
-    });
+    try {
 
-    await Future.delayed(
-      const Duration(seconds: 2),
-    );
-    const correctEmail = "admin@gmail.com";
-    const correctPassword = "123456";
+      setState(() {
+        isLoading = true;
+      });
 
-    String enteredEmail =
-    emailController.text.trim();
+      /// API Call
+      final result =
+      await AuthService.login(
+        email:
+        emailController.text
+            .trim(),
+        password:
+        passwordController.text
+            .trim(),
+      );
 
-    String enteredPassword =
-    passwordController.text.trim();
+      print(result);
 
-    setState(() {
-      isLoading = false;
-    });
+      setState(() {
+        isLoading = false;
+      });
 
-    if(enteredEmail == correctEmail && enteredPassword == correctPassword)
-      {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Login successfully"),),
-          );
-          Navigator.push(context, MaterialPageRoute(builder:
-          (_)=> HomeScreen(email: enteredEmail),
-          ));
-      }
-    else
-      {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Invalid Email or Password"))
+      /// Login Success
+      if (result["status"] ==
+          "success") {
+
+        final userData =
+        result["data"];
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Login Successful",
+            ),
+          ),
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                DashboardScreen(
+                  userId: int.parse(
+                    userData["id"]
+                        .toString(),
+                  ),
+                ),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            content: Text(
+              result["message"] ??
+                  "Login Failed",
+            ),
+          ),
         );
       }
 
+    } catch (e) {
 
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            "Error: $e",
+          ),
+        ),
+      );
+    }
   }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dummy Login"),
 
-        ),
+    return Scaffold(
+
+      appBar: AppBar(
+        title:
+        const Text("Employee Login"),
+      ),
+
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+
+        padding:
+        const EdgeInsets.all(20),
+
         child: Form(
+
           key: _formKey,
+
           child: Column(
+
             children: [
-              const SizedBox(height: 40,),
+
+              const SizedBox(
+                height: 30,
+              ),
 
               const Icon(
-                Icons.lock,
+                Icons.person,
                 size: 100,
               ),
 
-              const SizedBox(height: 30,),
+              const SizedBox(
+                height: 20,
+              ),
 
+              /// EMAIL
               TextFormField(
-                controller: emailController,
-                decoration: const InputDecoration(
+
+                controller:
+                emailController,
+
+                keyboardType:
+                TextInputType
+                    .emailAddress,
+
+                decoration:
+                const InputDecoration(
                   labelText: "Email",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  border:
+                  OutlineInputBorder(),
+                  prefixIcon:
+                  Icon(Icons.email),
                 ),
-                validator: (value){
 
-                  if(value==null || value.isEmpty)
-                    {
-                      return "Email required";
+                validator: (value) {
 
-                    }
-                  if(!value.contains("@"))
-                    {
-                      return "Enter Valid email";
-                    }
+                  if (value == null ||
+                      value.isEmpty) {
+                    return "Email Required";
+                  }
+
+                  if (!value.contains("@")) {
+                    return "Enter Valid Email";
+                  }
 
                   return null;
                 },
               ),
 
-              const SizedBox(height: 20,),
+              const SizedBox(
+                height: 20,
+              ),
 
+              /// PASSWORD
               TextFormField(
 
-                controller: passwordController,
+                controller:
+                passwordController,
 
-                obscureText: isPasswordHidden,
+                obscureText:
+                isPasswordHidden,
 
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                      onPressed: (){
-                        setState(() {
-                          isPasswordHidden = !isPasswordHidden;
-                        });
-                      },
-                      icon: Icon(
-                        isPasswordHidden?Icons.visibility:Icons.visibility_off,
-                      ),
+                decoration:
+                InputDecoration(
+
+                  labelText:
+                  "Password",
+
+                  border:
+                  const OutlineInputBorder(),
+
+                  prefixIcon:
+                  const Icon(
+                      Icons.lock),
+
+                  suffixIcon:
+                  IconButton(
+
+                    icon: Icon(
+
+                      isPasswordHidden
+                          ? Icons
+                          .visibility
+                          : Icons
+                          .visibility_off,
+                    ),
+
+                    onPressed: () {
+
+                      setState(() {
+                        isPasswordHidden =
+                        !isPasswordHidden;
+                      });
+                    },
                   ),
                 ),
-                validator: (value){
-                  if(value == null){
-                    return "Password require";
+
+                validator: (value) {
+
+                  if (value == null ||
+                      value.isEmpty) {
+                    return "Password Required";
                   }
-                  if(value.length < 6)
-                    {
-                      return "Minimum 6 characters";
-                    }
+
+                  if (value.length < 6) {
+                    return "Minimum 6 Characters";
+                  }
+
+                  return null;
                 },
               ),
+
+              const SizedBox(
+                height: 30,
+              ),
+
               SizedBox(
-                width: double.infinity,
-                height: 20,
-              child: ElevatedButton(
 
-                  onPressed: isLoading?null:login,
+                width:
+                double.infinity,
+
+                child:
+                ElevatedButton(
+
+                  onPressed:
+                  isLoading
+                      ? null
+                      : login,
+
                   child: Padding(
-                    padding: const EdgeInsets.all(55.0),
-                    child: isLoading?CircularProgressIndicator():Text("Login",style: TextStyle(fontSize: 45),),
+
+                    padding:
+                    const EdgeInsets
+                        .all(15),
+
+                    child: isLoading
+
+                        ? const SizedBox(
+                      height: 25,
+                      width: 25,
+                      child:
+                      CircularProgressIndicator(),
+                    )
+
+                        : const Text(
+                      "LOGIN",
+                    ),
                   ),
+                ),
               ),
-              ),
-
-
-
             ],
-
           ),
         ),
       ),
     );
   }
 }
-
