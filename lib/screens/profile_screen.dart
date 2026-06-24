@@ -5,7 +5,6 @@ import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 
 class ProfileScreen extends StatelessWidget {
-
   /// Dashboard se User ID receive hogi
   final int userId;
 
@@ -16,53 +15,57 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
+      // Clean white background for minimalism
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
         title: const Text(
-          "Employee Profile",
+          "Profile",
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
       ),
 
       body: FutureBuilder<User>(
-
         /// API Call
-        future:
-        ProfileService.getProfile(
-          userId,
-        ),
+        future: ProfileService.getProfile(userId),
+        builder: (context, snapshot) {
 
-        builder: (
-            context,
-            snapshot,
-            ) {
-
-          /// Loading State
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-
+          /// Loading State (Minimalist Loader)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child:
-              CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.black87,
+              ),
             );
           }
 
           /// Error State
           if (snapshot.hasError) {
-
             return Center(
-
               child: Padding(
-
-                padding:
-                const EdgeInsets.all(20),
-
-                child: Text(
-                  snapshot.error.toString(),
-                  textAlign:
-                  TextAlign.center,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -70,138 +73,139 @@ class ProfileScreen extends StatelessWidget {
 
           /// Data Null Check
           if (!snapshot.hasData) {
-
             return const Center(
               child: Text(
                 "No Data Found",
+                style: TextStyle(color: Colors.black54, fontSize: 16),
               ),
             );
           }
 
           /// User Object
-          final user =
-          snapshot.data!;
+          final user = snapshot.data!;
 
           return SingleChildScrollView(
-
-            padding:
-            const EdgeInsets.all(20),
-
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             child: Column(
-
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const SizedBox(height: 10),
 
-                /// Profile Image
-                CircleAvatar(
-
-                  radius: 60,
-
-                  backgroundImage:
-
-                  user.photo.isNotEmpty
-
-                      ? NetworkImage(
-                    user.photo,
-                  )
-
-                      : null,
-
-                  child:
-                  user.photo.isEmpty
-
-                      ? const Icon(
-                    Icons.person,
-                    size: 60,
-                  )
-
-                      : null,
+                /// Profile Image with subtle border
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade200, width: 2),
+                  ),
+                  child: CircleAvatar(
+                    radius: 55,
+                    backgroundColor: Colors.grey.shade100,
+                    backgroundImage: user.photo.isNotEmpty
+                        ? NetworkImage(user.photo)
+                        : null,
+                    child: user.photo.isEmpty
+                        ? const Icon(Icons.person_outline, size: 40, color: Colors.black54)
+                        : null,
+                  ),
                 ),
 
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
 
                 /// Employee Name
                 Text(
-
                   user.name,
-
-                  style:
-                  const TextStyle(
-
+                  style: const TextStyle(
                     fontSize: 24,
-
-                    fontWeight:
-                    FontWeight.bold,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    color: Colors.black87,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 25,
+                const SizedBox(height: 4),
+
+                /// Association Subtitle
+                Text(
+                  "High Court Employees Welfare Association",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade500,
+                  ),
                 ),
 
-                buildInfoCard(
-                  icon: Icons.email,
-                  title: "Email",
+                const SizedBox(height: 30),
+                Divider(color: Colors.grey.shade200, height: 1),
+                const SizedBox(height: 20),
+
+                /// Information List
+                _buildMinimalInfoRow(
+                  icon: Icons.alternate_email_rounded,
+                  title: "Email Address",
                   value: user.email,
                 ),
-
-                buildInfoCard(
-                  icon: Icons.phone,
-                  title: "Mobile",
+                _buildMinimalInfoRow(
+                  icon: Icons.phone_outlined,
+                  title: "Mobile Number",
                   value: user.mobile,
                 ),
-
-                buildInfoCard(
-                  icon: Icons.work,
+                _buildMinimalInfoRow(
+                  icon: Icons.badge_outlined,
                   title: "Designation",
-                  value:
-                  user.designation,
+                  value: user.designation,
                 ),
-
-                buildInfoCard(
-                  icon: Icons.business,
+                _buildMinimalInfoRow(
+                  icon: Icons.account_balance_outlined,
                   title: "Department",
-                  value:
-                  user.department,
+                  value: user.department,
                 ),
 
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 40),
 
-                /// Edit Profile Button
+                /// Minimalist Edit Button
                 SizedBox(
-
-                  width:
-                  double.infinity,
-
-                  child:
-                  ElevatedButton.icon(
-
-                    icon: const Icon(
-                      Icons.edit,
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1A1A1A), // Sleek almost-black
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-
-                    label: const Text(
-                      "Edit Profile",
-                    ),
-
                     onPressed: () {
-
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(
-
-                        const SnackBar(
-                          content: Text(
-                            "Edit Profile Coming Soon",
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          content: const Text("Edit Profile Coming Soon"),
                         ),
                       );
                     },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.edit_outlined, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          "Edit Profile",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+
+                const SizedBox(height: 30),
               ],
             ),
           );
@@ -210,33 +214,57 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Reusable Profile Card
-  Widget buildInfoCard({
-
+  /// Reusable Minimalist Profile Row
+  Widget _buildMinimalInfoRow({
     required IconData icon,
-
     required String title,
-
     required String value,
-
   }) {
-
-    return Card(
-
-      elevation: 3,
-
-      margin:
-      const EdgeInsets.only(
-        bottom: 12,
-      ),
-
-      child: ListTile(
-
-        leading: Icon(icon),
-
-        title: Text(title),
-
-        subtitle: Text(value),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Flat, soft-colored icon container
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.black87,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Text Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
